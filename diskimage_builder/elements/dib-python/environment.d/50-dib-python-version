@@ -12,6 +12,10 @@ if [ -z "${DIB_PYTHON_VERSION:-}" ]; then
         fi
     elif [ "$DISTRO_NAME" == "centos" ]; then
         DIB_PYTHON_VERSION=2
+    elif [ "$DISTRO_NAME" == "rhel" ]; then
+	if [ "$DIB_RELEASE" == "8" ]; then
+	    DIB_PYTHON_VERSION=3
+	fi
     elif [ "$DISTRO_NAME" == "centos7" ]; then
         DIB_PYTHON_VERSION=2
     elif [ "$DISTRO_NAME" == "rhel7" ]; then

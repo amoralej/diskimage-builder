@@ -25,7 +25,7 @@ set -o pipefail
 
 # This is only required on CentOS ... see notes in
 # root.d/08-yum-chroot about %_install_langs
-if [[ $DISTRO_NAME != "fedora" ]]; then
+if [[ $DISTRO_NAME != "fedora" && $DISTRO_NAME != rhel ]]; then
 
     # Stripping *all* locales is a bad idea.  For now, we take the
     # suggestion in [1] for reducing this

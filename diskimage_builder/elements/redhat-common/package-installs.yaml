@@ -11,6 +11,6 @@ ca-certificates:
 # selinux-targeted policy and related tools
 selinux-policy:
 selinux-policy-targeted:
-libselinux-python:
-policycoreutils:
-policycoreutils-python:
+#libselinux-python:
+#policycoreutils:
+#policycoreutils-python:

@@ -57,6 +57,7 @@ _RPM="rpm --dbpath=/var/lib/rpm"
 function _install_repos {
     local packages
     local rc
+    local release_pkg
 
     # pre-install the base system packages via rpm.  We previously
     # just left it up to yum to drag these in when we "yum install
@@ -73,7 +74,11 @@ function _install_repos {
     # (see above) so ...
     packages="basesystem filesystem setup "
 
-    packages+="${DISTRO_NAME}-release "
+    release_pkg=${DISTRO_NAME}-release
+    if [[ $DISTRO_NAME = "rhel" ]]; then
+	release_pkg="redhat-release"
+    fi
+    packages+="$release_pkg"
 
     # Starting in F21 this was split into a separate package
     if [[ ${DISTRO_NAME} == 'fedora' ]]; then
@@ -113,6 +118,13 @@ function _install_repos {
     # releases, see rhbz#1265873
     sudo $_RPM --root $TARGET_ROOT --nodeps -ivh $WORKING/*rpm
 
+    if [[ ${DISTRO_NAME} = rhel ]]; then
+       # RHEL repos require subscription manager; there is no repos
+       # file.  We are only using the beta repos which are in the
+       # bootstrap repo.
+       sudo cp $repo/* $TARGET_ROOT/etc/yum.repos.d/
+    fi
+
     # install the bootstrap mirror repos over the default ones, if
     # set.  we will remove this at the end so the final image has
     # regular mirrors
@@ -123,7 +135,6 @@ function _install_repos {
         sudo cp ${DIB_YUM_MINIMAL_BOOTSTRAP_REPOS}/* \
             $TARGET_ROOT/etc/yum.repos.d/
     fi
-
 }
 
 # _install_pkg_manager packages...
@@ -182,7 +193,7 @@ function _install_pkg_manager {
             # [1] http://pkgs.fedoraproject.org/cgit/rpms/glibc.git/commit/glibc.spec?h=f23&id=91764bd9ec690d4b8a886c0a3a104aac12d340d2
             # [2] http://yum.baseurl.org/gitweb?p=yum.git;a=commit;h=26128173b362474456e8f0642073ecb0322ed031
             echo "%_install_langs C:en_US:en_US.UTF-8" >> $HOME/.rpmmacros
-        elif [ $DISTRO_NAME = "fedora" -a $DIB_RELEASE -ge 24 ]; then
+        elif [ $DISTRO_NAME = "fedora" -a $DIB_RELEASE -ge 24 ] || [ $DISTRO_NAME = "rhel" ]; then
             # glibc on F24 has split locales into "langpack" packages.
             # Yum doesn't understand the weak-dependencies glibc now
             # uses to get the minimal-langpack and chooses a
@@ -200,6 +211,14 @@ function _install_pkg_manager {
         # Really all we can do is pre-install the right thing
         _extra_pkgs+="coreutils "
 
+
+	# RHEL8 has a "system" python, and you explicitly need to
+	# install the "user" interpreter.  On the other platforms,
+	# this is dragged in by base deps.
+	if [ "$DISTRO_NAME" = "rhel" ]; then
+	    _extra_pkgs+="python3"
+	fi
+	
         sudo -E yum -y \
             --disableexcludes=all \
             --setopt=cachedir=$YUM_CACHE/$ARCH/$DIB_RELEASE \
