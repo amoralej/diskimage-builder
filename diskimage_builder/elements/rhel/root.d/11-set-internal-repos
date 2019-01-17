@@ -1,0 +1,54 @@
+#!/bin/bash
+
+if [ ${DIB_DEBUG_TRACE:-0} -gt 0 ]; then
+    set -x
+fi
+set -eu
+set -o pipefail
+
+DIB_DISTRIBUTION_MIRROR=${DIB_DISTRIBUTION_MIRROR:-}
+
+#[ -n "$DIB_DISTRIBUTION_MIRROR" ] || exit 0
+
+# Only set the mirror for the Base, Extras and Updates repositories
+# The others arn't enabled and do not exist on all mirrors
+cat > /etc/yum.repos.d/rhel8.repo<<EOF
+[download-node-02.eng.bos.redhat.com_rel-eng_RHEL-8.0-Beta-1.7_compose_AppStream_x86_64_os_]
+name=appstream
+baseurl=http://download-node-02.eng.bos.redhat.com/rel-eng/RHEL-8.0-Beta-1.7/compose/AppStream/x86_64/os/
+enabled=1
+gpgcheck=0
+priority=1
+
+[download-node-02.eng.bos.redhat.com_rel-eng_RHEL-8.0-Beta-1.7_compose_BaseOS_x86_64_os_]
+name=base
+baseurl=http://download-node-02.eng.bos.redhat.com/rel-eng/RHEL-8.0-Beta-1.7/compose/BaseOS/x86_64/os/
+enabled=1
+gpgcheck=0
+priority=1
+
+[trunk.rdoproject.org_fedora_current_]
+name=fedora_current
+baseurl=https://trunk.rdoproject.org/fedora/current/
+enabled=1
+gpgcheck=0
+priority=10
+#includepkgs=*-ironic-python-agent,
+
+[trunk.rdoproject.org_fedora_stable-base_latest]
+name=fedora_stable
+baseurl=https://trunk.rdoproject.org/fedora/stable-base/latest
+enabled=1
+gpgcheck=0
+priority=10
+includepkgs=python3-*,python*lang,scsi-target-utils,perl-Config-General,sysbench,sdparm,ck,libconfig,libpmem*,librados2,librbd1,lldpad,lttng-ust,luajit,smartmontools,userspace-rcu
+
+# amoralej remove that after https://review.rdoproject.org/r/#/c/18345/
+[temporal-openstack-selinux]
+name=temporal-openstack-selinux
+baseurl=http://logs.rdoproject.org/45/18345/1/check/legacy-DLRN-rpmbuild-fedora/96dd07a/buildset/fedora/current/
+enabled=1
+gpgcheck=0
+
+EOF
+

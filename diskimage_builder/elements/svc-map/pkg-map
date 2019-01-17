@@ -10,6 +10,11 @@
       "PyYAML": "python-PyYAML"
     }
   },
+  "distro": {
+    "rhel":{
+      "PyYAML": "python3-PyYAML"
+    }
+  },
   "default": {
     "PyYAML": "PyYAML"
   }

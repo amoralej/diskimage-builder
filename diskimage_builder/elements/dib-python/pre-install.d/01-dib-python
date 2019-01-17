@@ -6,6 +6,12 @@ fi
 set -eu
 set -o pipefail
 
+if [ "$DISTRO_NAME" == "rhel" ]&& [ "$DIB_RELEASE" == "8" ]; then
+    echo "Install python3"
+    dnf module enable -y python36
+    dnf module install -y python36:3.6
+fi
+
 python_path=$(command -v python${DIB_PYTHON_VERSION})
 if [ -z "$python_path" ]; then
     echo "Could not find python${DIB_PYTHON_VERSION} executable."
